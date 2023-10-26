@@ -7,8 +7,11 @@ export default async function handler(
 ) {
   if (req.method === "GET") {
     
-    // Fetch data from Supabase
-    const { data, error } = await supabase.from("places").select("*");
+    // Fetch data from Supabase excluding places with "turn" in their name
+    const { data, error } = await supabase
+      .from("places")
+      .select("*")
+      .not('places_name', 'ilike', '%turn%');
 
     if (error) {
       return res.status(500).json({ error: error.message });
