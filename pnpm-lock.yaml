@@ -8,9 +8,6 @@ dependencies:
   '@supabase/supabase-js':
     specifier: ^2.38.0
     version: 2.38.0
-  dijkstras-algorithm-ts:
-    specifier: ^1.0.11
-    version: 1.0.11
   next:
     specifier: 13.5.4
     version: 13.5.4(react-dom@18.2.0)(react@18.2.0)
@@ -837,10 +834,6 @@ packages:
   /didyoumean@1.2.2:
     resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}
     dev: true
-
-  /dijkstras-algorithm-ts@1.0.11:
-    resolution: {integrity: sha512-xAd8B3ZUhS91CT0ohcyubsa6GP7YMruIvYx+3Gw/GsoV1FmgXZIk/qqyCbjNmoZPTHFsAX8aa1H2w+yMtR/o0g==}
-    dev: false
 
   /dir-glob@3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
