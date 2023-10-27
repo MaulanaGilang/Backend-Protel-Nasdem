@@ -187,7 +187,7 @@ export default async function handler(
       }
     });
 
-    if (startId === null || nearestDistance > 3) {
+    if (startId === null || nearestDistance > 3/1000) {
       return res.status(404).json({ error: "No starting place found." });
     }
 
