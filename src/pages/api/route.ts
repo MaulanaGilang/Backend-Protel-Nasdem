@@ -95,6 +95,27 @@ function dijkstra(graph: Graph, start: string, end: string): string[] | null {
   return null;
 }
 
+function haversineDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const d = R * c;
+
+  return d;
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -116,32 +137,31 @@ export default async function handler(
 
     return res.status(200).json({ message: "Status updated successfully." });
   } else if (req.method === "GET") {
-    const { userLatitude, userLongitude, endId } = req.query as {
-      userLatitude: string;
-      userLongitude: string;
+    const { latitude, longitude, endId } = req.query as {
+      latitude: string;
+      longitude: string;
       endId: string;
     };
 
     if (
-      !userLatitude ||
-      !userLongitude ||
+      !latitude ||
+      !longitude ||
       !endId ||
-      isNaN(Number(userLatitude)) ||
-      isNaN(Number(userLongitude)) ||
+      typeof latitude !== "string" ||
+      typeof longitude !== "string" ||
       typeof endId !== "string"
     ) {
-      return res
-        .status(400)
-        .json({
-          error: "userLatitude, userLongitude, and endId are required.",
-        });
+      return res.status(400).json({
+        error:
+          "latitude, longitude, and endId are required and must be strings.",
+      });
     }
 
     // Fetch data from Supabase
-    const { data: distances } = await supabase.from("distance").select();
+    const { data } = await supabase.from("distance").select();
     const { data: placesData } = await supabase.from("places").select();
 
-    if (!distances || distances.length === 0) {
+    if (!data || data.length === 0) {
       return res.status(404).json({ error: "No route data found." });
     }
 
@@ -149,43 +169,54 @@ export default async function handler(
       return res.status(404).json({ error: "No places data found." });
     }
 
-    // Identify the closest place as startId based on user's coordinates
-    const userLocation = {
-      latitude: parseFloat(userLatitude),
-      longitude: parseFloat(userLongitude),
-    };
-    let closestPlaceId = "";
-    let minDistance = Infinity;
-    for (const place of placesData) {
-      const distance = Math.sqrt(
-        Math.pow(place.latitude - userLocation.latitude, 2) +
-          Math.pow(place.longitude - userLocation.longitude, 2)
+    let nearestDistance = Infinity;
+    let startId: number | null = null;
+    const givenLat = parseFloat(latitude);
+    const givenLon = parseFloat(longitude);
+
+    placesData.forEach((place: Places) => {
+      const distance = haversineDistance(
+        givenLat,
+        givenLon,
+        place.latitude,
+        place.longitude
       );
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestPlaceId = place.id.toString();
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        startId = place.id;
       }
+    });
+
+    if (startId === null || nearestDistance > 3) {
+      return res.status(404).json({ error: "No starting place found." });
     }
 
-    const graph: Graph = {};
+    const graph: { [key: string]: { [key: string]: number } } = {};
 
     // Initialize the graph considering the status
-    distances.forEach((distance: Nodes) => {
+    data.forEach((distance: Nodes) => {
       if (distance.status) {
-        if (!graph[distance.places1_id]) graph[distance.places1_id] = {};
-        if (!graph[distance.places2_id]) graph[distance.places2_id] = {};
+        if (!graph[distance.places1_id]) {
+          graph[distance.places1_id] = {};
+        }
+        if (!graph[distance.places2_id]) {
+          graph[distance.places2_id] = {};
+        }
         graph[distance.places1_id][distance.places2_id] = distance.distance;
         graph[distance.places2_id][distance.places1_id] = distance.distance;
       }
     });
 
-    const path = dijkstra(graph, closestPlaceId, endId);
+    const path = dijkstra(graph, String(startId), endId);
 
     // For each path (id), get the data then compose to object
     const pathResult: Places[] = [];
     path?.forEach((id) => {
       const place = placesData.find((place: Places) => place.id === Number(id));
-      if (place) pathResult.push(place);
+
+      if (place) {
+        pathResult.push(place);
+      }
     });
 
     return res.status(200).json(pathResult);
