@@ -143,8 +143,8 @@ export default async function handler(
       endId: string;
     };
     
-    latitude = latitude.replace(/\./g, ',');
-    longitude = longitude.replace(/\./g, ',');
+    latitude = latitude.replace(/\,/g, '.');
+    longitude = longitude.replace(/\,/g, '.');
 
     console.log(latitude, longitude, endId);
     if (
