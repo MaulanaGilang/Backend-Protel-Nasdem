@@ -226,7 +226,7 @@ export default async function handler(
       return res.status(404).json({ error: "No path found." });
     }
     return res.status(200).json({
-      path: pathResult,
+      nodes: pathResult,
     });
   } else {
     return res.status(405).json({ message: "Method Not Allowed" });
