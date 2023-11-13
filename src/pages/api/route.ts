@@ -142,9 +142,9 @@ export default async function handler(
       longitude: string;
       endId: string;
     };
-    
-    latitude = latitude.replace(/\,/g, '.');
-    longitude = longitude.replace(/\,/g, '.');
+
+    latitude = latitude.replace(/\,/g, ".");
+    longitude = longitude.replace(/\,/g, ".");
 
     console.log(latitude, longitude, endId);
     if (
@@ -225,7 +225,9 @@ export default async function handler(
     if (pathResult.length === 0) {
       return res.status(404).json({ error: "No path found." });
     }
-    return res.status(200).json(pathResult);
+    return res.status(200).json({
+      path: pathResult,
+    });
   } else {
     return res.status(405).json({ message: "Method Not Allowed" });
   }
