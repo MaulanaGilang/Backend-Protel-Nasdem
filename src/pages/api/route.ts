@@ -143,6 +143,7 @@ export default async function handler(
       endId: string;
     };
 
+    console.log(latitude, longitude, endId);
     if (
       !latitude ||
       !longitude ||
