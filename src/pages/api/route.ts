@@ -137,11 +137,14 @@ export default async function handler(
 
     return res.status(200).json({ message: "Status updated successfully." });
   } else if (req.method === "GET") {
-    const { latitude, longitude, endId } = req.query as {
+    let { latitude, longitude, endId } = req.query as {
       latitude: string;
       longitude: string;
       endId: string;
     };
+    
+    latitude = latitude.replace(/\./g, ',');
+    longitude = longitude.replace(/\./g, ',');
 
     console.log(latitude, longitude, endId);
     if (
