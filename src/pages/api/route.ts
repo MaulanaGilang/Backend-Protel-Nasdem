@@ -218,7 +218,9 @@ export default async function handler(
         pathResult.push(place);
       }
     });
-
+    if (pathResult.length === 0) {
+      return res.status(404).json({ error: "No path found." });
+    }
     return res.status(200).json(pathResult);
   } else {
     return res.status(405).json({ message: "Method Not Allowed" });
